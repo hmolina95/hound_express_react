@@ -1,15 +1,17 @@
 import React from "react";
+import { useSelector } from "react-redux";
 import { PanelContainer } from "../../Themes/StatusPanel/StatusPanel";
+import { RootState } from "../../store/store";
 
-interface Props {
-    counts: {
-        totalActive: number;
-        inTransit: number;
-        delivered: number;
+const StatusPanel: React.FC = () => {
+    const guides = useSelector((state: RootState) => state.guides.guides);
+
+    const counts = {
+        totalActive: guides.filter(g => g.status !== "delivered").length,
+        inTransit: guides.filter(g => g.status === "in-transit").length,
+        delivered: guides.filter(g => g.status === "delivered").length,
     };
-}
 
-const StatusPanel: React.FC<Props> = ({ counts }) => {
     return (
         <PanelContainer>
             <h1>Estado General</h1>
@@ -23,4 +25,3 @@ const StatusPanel: React.FC<Props> = ({ counts }) => {
 }
 
 export default StatusPanel;
-

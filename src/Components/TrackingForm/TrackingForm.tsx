@@ -1,13 +1,15 @@
 import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { FormContainer, FormGroup, FormLegend, SubmitButton } from "../../Themes/TrackingForm/TrackingForm";
 import { Guide } from "../../Interfaces/types";
+import { addGuide } from "../../store/guidesSlice";
+import { RootState } from "../../store/store";
 
-interface Props {
-    guides: Guide[];
-    onAddGuide: (guide: Guide) => void;
-}
 
-const TrackingForm: React.FC<Props> = ( { guides, onAddGuide } ) => {
+const TrackingForm: React.FC = () => {
+    const dispatch = useDispatch();
+    const guides = useSelector((state: RootState) => state.guides.guides);
+
     const [formData, setFormData] = useState({
         trackingNumber: "",
         origin: "",
@@ -24,37 +26,36 @@ const TrackingForm: React.FC<Props> = ( { guides, onAddGuide } ) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const { trackingNumber, origin, destination, recipient, creationDate, status } = formData;
-    
+
         if (!trackingNumber || !origin || !destination || !recipient || !creationDate) {
-          alert("Por favor, complete todos los campos.");
-          return;
+            alert("Por favor, complete todos los campos.");
+            return;
         }
-    
+
         if (guides.some(g => g.trackingNumber === trackingNumber)) {
-          alert("El número de guía ya existe.");
-          return;
+            alert("El número de guía ya existe.");
+            return;
         }
-    
-        onAddGuide({
-          trackingNumber,
-          origin,
-          destination,
-          recipient,
-          creationDate,
-          status: status as Guide["status"],
-          history: [{ status: status as Guide["status"], timestamp: new Date().toLocaleString() }],
-        });
-    
+
+        dispatch(addGuide({
+            trackingNumber,
+            origin,
+            destination,
+            recipient,
+            creationDate,
+            status: status as Guide["status"],
+            history: [{ status: status as Guide["status"], timestamp: new Date().toLocaleString() }],
+        }));
+
         setFormData({
-          trackingNumber: "",
-          origin: "",
-          destination: "",
-          recipient: "",
-          creationDate: "",
-          status: "pending",
+            trackingNumber: "",
+            origin: "",
+            destination: "",
+            recipient: "",
+            creationDate: "",
+            status: "pending",
         });
     };
-
 
     return (
         <FormContainer>

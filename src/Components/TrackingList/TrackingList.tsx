@@ -1,36 +1,45 @@
 import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { HistoryButton, TrackingContainer, UpdateButton } from "../../Themes/TrackingList/TrackingList";
 import { Guide, GuideStatus } from "../../Interfaces/types";
+import { updateGuideStatus, updateAllStatuses, setSelectedHistory } from "../../store/guidesSlice";
+import { RootState } from "../../store/store";
 
-interface Props {
-    guides: Guide[];
-    onUpdateStatus: (index: number, status: GuideStatus) => void;
-    onUpdateAll: (statuses: GuideStatus[]) => void;
-    onShowHistory: (guide: Guide) => void;
-}
 
-const TrackingList: React.FC<Props> = ({ guides, onUpdateStatus, onUpdateAll, onShowHistory }) => {
+const TrackingList: React.FC = () => {
+    const dispatch = useDispatch();
+    const guides = useSelector((state: RootState) => state.guides.guides);
+
     const [statusDraft, setStatusDraft] = useState<GuideStatus[]>(guides.map(g => g.status));
 
     const handleStatusChange = (index: number, value: GuideStatus) => {
         const newDraft = [...statusDraft];
         newDraft[index] = value;
         setStatusDraft(newDraft);
+        dispatch(updateGuideStatus({ index, newStatus: value }));
+    };
+
+    const handleUpdateAll = () => {
+        dispatch(updateAllStatuses(statusDraft));
+    };
+
+    const handleShowHistory = (guide: Guide) => {
+        dispatch(setSelectedHistory(guide));
     };
 
     const getStatusOptions = (current: GuideStatus) => {
         const flow: Record<GuideStatus, GuideStatus[]> = {
-        pending: ["pending", "in-transit"],
-        "in-transit": ["in-transit", "delivered"],
-        delivered: ["delivered"],
-    };
+            pending: ["pending", "in-transit"],
+            "in-transit": ["in-transit", "delivered"],
+            delivered: ["delivered"],
+        };
 
-    return flow[current].map(status => (
-      <option key={status} value={status}>
-        {status === "pending" ? "Pendiente" : status === "in-transit" ? "En tránsito" : "Entregado"}
-      </option>
-    ));
-  };
+        return flow[current].map(status => (
+            <option key={status} value={status}>
+                {status === "pending" ? "Pendiente" : status === "in-transit" ? "En tránsito" : "Entregado"}
+            </option>
+        ));
+    };
 
     return (
         <>
@@ -64,14 +73,14 @@ const TrackingList: React.FC<Props> = ({ guides, onUpdateStatus, onUpdateAll, on
                                     </select>
                                 </td>
                                 <td>
-                                    <HistoryButton onClick={() => onShowHistory(guide)}>Historial</HistoryButton>
+                                    <HistoryButton onClick={() => handleShowHistory(guide)}>Historial</HistoryButton>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 <div>
-                    <UpdateButton onClick={() => onUpdateAll(statusDraft)} type="button" value="Actualizar Estado" />
+                    <UpdateButton onClick={handleUpdateAll} type="button" value="Actualizar Estado" />
                 </div>
             </TrackingContainer>
         </>
